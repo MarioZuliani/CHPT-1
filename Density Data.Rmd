@@ -29,3 +29,29 @@ count %>%
   ggplot(aes(density.data, n)) + geom_col() + theme_classic() + xlab("Density Data") + ylab("Count") + ggtitle("Papers Including Density Data")
 ```
 
+```{r}
+protege <- Density%>%
+  count(protégé.taxa)
+protege
+```
+```{r}
+protege <- na.omit(protege)
+```
+
+```{r}
+protege %>%
+  ggplot(aes(protégé.taxa, n)) + geom_col() + theme_classic() + xlab("Protégé Taxa") + ylab("Count") + ggtitle("Protégé Taxa in Included Papers")
+```
+
+```{r}
+measure <- Density%>%
+  count(measure)
+measure
+```
+
+```{r}
+measure <- na.omit(measure)
+measure %>%
+  ggplot(aes(measure, n)) + geom_col() + theme_classic() + xlab("Method of Measurement") + ylab("Count") + ggtitle("Methods of Measuring Shrub Denisty") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
