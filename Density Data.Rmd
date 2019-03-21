@@ -1,0 +1,31 @@
+---
+title: "CPT1 Data"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(tidyverse)
+library(dplyr)
+getwd()
+```
+
+```{r}
+Density <- read_csv("Density.Data.csv")
+```
+```{r}
+count(Density, vars = "density.data" )
+count <- Density %>%
+  count(density.data)
+```
+
+```{r}
+Density %>%
+  count(density.data)
+```
+
+```{r}
+count %>%
+  ggplot(aes(density.data, n)) + geom_col() + theme_classic() + xlab("Density Data") + ylab("Count") + ggtitle("Papers Including Density Data")
+```
+
