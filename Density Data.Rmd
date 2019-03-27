@@ -52,6 +52,17 @@ measure
 ```{r}
 measure <- na.omit(measure)
 measure %>%
-  ggplot(aes(measure, n)) + geom_col() + theme_classic() + xlab("Method of Measurement") + ylab("Count") + ggtitle("Methods of Measuring Shrub Denisty") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  ggplot(aes(measure, n)) + geom_col() + theme_classic() + xlab("Method of Measurement") + ylab("Count") + ggtitle("Methods of Measuring Shrub Denisty") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + coord_flip()
+```
+
+
+```{r}
+facilitation <- Density %>%
+  count(facilitation.conclusion)
+facilitation
+```
+```{r}
+facilitation %>%
+   ggplot(aes(facilitation.conclusion, n)) + geom_col() + theme_classic() + xlab("Is Facilitation Present?") + ylab("Count") + ggtitle("Is Facilitation Present in Density Papers")
 ```
 
