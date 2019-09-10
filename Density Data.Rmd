@@ -40,7 +40,7 @@ protege <- na.omit(protege)
 
 ```{r}
 protege %>%
-  ggplot(aes(protégé.taxa, n)) + geom_col() + theme_classic() + xlab("Protégé Taxa") + ylab("Count") + ggtitle("Protégé Taxa in Included Papers")
+  ggplot(aes(protégé.taxa, n, fill = protégé.taxa)) + geom_col() + theme_classic() + xlab("Protégé Taxa") + ylab("Count") + ggtitle("Protégé Taxa in Included Papers")
 ```
 
 ```{r}
@@ -64,5 +64,9 @@ facilitation
 ```{r}
 facilitation %>%
    ggplot(aes(facilitation.conclusion, n)) + geom_col() + theme_classic() + xlab("Is Facilitation Present?") + ylab("Count") + ggtitle("Is Facilitation Present in Density Papers")
+```
+
+```{r}
+
 ```
 
