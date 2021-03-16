@@ -1,0 +1,83 @@
+---
+title: "Index"
+author: "Mario"
+date: '2021-03-16'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+data <- read_csv("Synthesis Data.csv") %>%
+  rename(abundance = "animal.abundance") %>%
+  rename(density = "density.number")
+data
+
+###Abundance
+library(metafor)
+data_e1 <- escalc(measure = "IR", xi = abundance, ti = density, data = data) %>% 
+  filter(yi != "NA")
+
+###Richness
+data_e2 <- escalc(measure = "IR", xi = animal.richness, ti = density, data = data) %>% 
+  filter(yi != "NA")
+
+###Rename the new columns
+data_1 <- data_e1 %>% 
+  rename(abundance_rate = yi, var_abundancerate = vi)
+
+data_2 <- data_e2 %>%
+  rename(richness_rate = yi, var_richnessrate = vi)
+
+
+###All data
+data_all <- merge(data_1, data_2, all = TRUE)
+
+###Summarize Data
+summary_data <- data_all %>% 
+  group_by(Study.ID) %>% 
+  summarise(abundance = mean(abundance), abundance_rate = mean(abundance_rate), richness_rate = mean(richness_rate), var_abundance= sd(var_abundancerate), var_richnessrate = sd(var_richnessrate), mean_density= mean(density))
+```
+
+###Meta Models
+```{r}
+library(broom)
+#x = density
+#y = abundance
+
+mod1.1 <- rma(yi = yi, sei = vi, method = "ML", test = "knha", control=list(stepadj=0.5), data = data_e1)
+summary(mod1.1)
+```
+```{r}
+m1.1 <- tidy(mod1.1)
+m1.1
+```
+
+```{r}
+mod1.2 <- rma(yi = yi, sei = vi, method = "ML", mods = ~macrohabitat -1, test = "knha", control=list(stepadj=0.5), data = data_e1)
+summary(mod1.2)
+```
+```{r}
+m1.2 <- tidy(mod1.2)
+m1.2
+```
+
+```{r}
+ggplot(summary_data, aes(abundance, mean_density)) +
+  geom_point() +
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 2, color = "black", size = 2, se = FALSE)
+```
+
+```{r}
+ggplot(data_e1, aes(macrohabitat, yi)) +
+  geom_boxplot() +
+  labs(x = "ecoystem", y = "abundance animals") + 
+  stat_summary(fun.y=mean, geom="point", shape=1, size = 1, color="black", fill="red")
+```
+
+```{r}
+ggplot(data_e1, aes(density, yi)) +
+  geom_point(aes(color = macrohabitat)) + 
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 2, color = "black", se = FALSE) +
+  labs(x = "total density", y = "abundance")
+```
+
