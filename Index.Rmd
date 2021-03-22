@@ -1,9 +1,25 @@
 ---
-title: "Index"
+title: ""
 author: "Mario"
 date: '2021-03-16'
 output: html_document
 ---
+##Shrub Density influences on Animals
+The following is a review of shrubs that have been reported as benefactor species on local animal communities. Web of Science resources were queried using the following key terms.
+
+"facil* density* shrub*”, “density* shrub* facilitate*” and “density* shrub* animal* facil*"
+
+###Questions:
+Is there evidence that shrub studies that reported facilitation of other plants or of animals influence measures of animal community composition?  
+Is there are a relationship between animal abundance or richness and shrub or tree density?
+Is there a difference between the measures of animal community composition in studies that reported facilitation or not?
+
+###Hypothesis:
+Higher density of foundation species that have reported facilitation support higher densities or more rich animal communities.
+
+###Predictions:
+1. Reported benefactor plants better support animal communities.  
+2. Higher density of benefactor plants predict higher measures of animal community structure or composition.  
 
 ```{r setup, include=FALSE}
 library(tidyverse)
@@ -44,13 +60,17 @@ library(broom)
 #x = density
 #y = abundance
 
-mod1.1 <- rma(yi = yi, sei = vi, method = "ML", test = "knha", control=list(stepadj=0.5), data = data_e1)
+mod1.1 <- rma(yi = yi, sei = vi, method = "ML", mods = ~density, test = "knha", control=list(stepadj=0.5), data = data_e1)
 summary(mod1.1)
 ```
 ```{r}
 m1.1 <- tidy(mod1.1)
 m1.1
 ```
+```{r}
+plot(mod1.1)
+```
+
 
 ```{r}
 mod1.2 <- rma(yi = yi, sei = vi, method = "ML", mods = ~macrohabitat -1, test = "knha", control=list(stepadj=0.5), data = data_e1)
@@ -60,7 +80,11 @@ summary(mod1.2)
 m1.2 <- tidy(mod1.2)
 m1.2
 ```
+```{r}
+plot(mod1.2)
+```
 
+###Data Viz 
 ```{r}
 ggplot(summary_data, aes(abundance, mean_density)) +
   geom_point() +
@@ -75,9 +99,10 @@ ggplot(data_e1, aes(macrohabitat, yi)) +
 ```
 
 ```{r}
-ggplot(data_e1, aes(density, yi)) +
+ggplot(data_e1, aes(density, abundance)) +
   geom_point(aes(color = macrohabitat)) + 
   stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 2, color = "black", se = FALSE) +
-  labs(x = "total density", y = "abundance")
+  labs(x = "density", y = "abundance")
 ```
 
+###Interpretations
