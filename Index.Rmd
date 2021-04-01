@@ -52,6 +52,10 @@ summary_data <- data_all %>%
   group_by(Study.ID) %>% 
   summarise(abundance = mean(abundance), abundance_rate = mean(abundance_rate), richness_rate = mean(richness_rate), var_abundance= sd(var_abundancerate), var_richnessrate = sd(var_richnessrate), mean_density= mean(standardized.density))
 summary_data$Study.ID <- as.character(summary_data$Study.ID)
+summary_data2 <- data_all %>% 
+  group_by(macrohabitat) %>% 
+  summarise(abundance = mean(abundance), abundance_rate = mean(abundance_rate), richness_rate = mean(richness_rate), var_abundance= sd(var_abundancerate), var_richnessrate = sd(var_richnessrate), mean_density= mean(standardized.density))
+summary_data$Study.ID <- as.character(summary_data$Study.ID)
 ```
 
 ###Meta Models
@@ -134,9 +138,16 @@ ggplot(data_e1, aes(standardized.density, yi, weight = vi)) +
   labs(x = "Total Shrub Density per Study", y = "Incidence Rate for Animal Abundance")
 ```
 ```{r}
-ggplot(summary_data, aes(Study.ID, abundance_rate)) +
+ggplot(summary_data, aes(Study.ID, abundance)) +
   geom_point(size =2) +
-  geom_errorbar(aes(ymin = abundance_rate - var_abundance, ymax = abundance_rate + var_abundance), size= 0.7, width=0.1, position = position_dodge(width = 0.5)) +
+  geom_errorbar(aes(ymin = abundance - var_abundance, ymax = abundance + var_abundance), size= 0.7, width=0.1, position = position_dodge(width = 0.5)) +
+  coord_flip() +
+  geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 2)
+```
+```{r}
+ggplot(summary_data2, aes(macrohabitat, abundance)) +
+  geom_point(size =2) +
+  geom_errorbar(aes(ymin = abundance - var_abundance, ymax = abundance + var_abundance), size= 0.7, width=0.1, position = position_dodge(width = 0.5)) +
   coord_flip() +
   geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 2)
 ```
