@@ -1,0 +1,184 @@
+---
+title: ''
+author: "Mario"
+date: '2021-03-16'
+output:
+  html_document: default
+  pdf_document: default
+---
+##Shrub Density influences on Animals
+The following is a review of shrubs that have been reported as benefactor species on local animal communities. Web of Science resources were queried using the following key terms.
+
+"facil* density* shrub*”, “density* shrub* facilitate*” and “density* shrub* animal* facil*"
+
+###Questions:
+Is there evidence that shrub studies that reported facilitation of other plants or of animals influence measures of animal community composition?  
+Is there are a relationship between animal abundance or richness and shrub or tree density?
+Is there a difference between the measures of animal community composition in studies that reported facilitation or not?
+
+###Hypothesis:
+Higher density of foundation species that have reported facilitation support higher densities or more rich animal communities.
+
+###Predictions:
+1. Reported benefactor plants better support animal communities.  
+2. Higher density of benefactor plants predict higher measures of animal community structure or composition.  
+
+```{r setup, include=FALSE}
+library(rmarkdown)
+library(tidyverse)
+data <- read_csv("Synthesis Data.csv") %>%
+  rename(abundance = "animal.abundance") %>%
+  rename(density = "density.number")
+data
+
+###Abundance
+library(metafor)
+data_e1 <- escalc(measure = "IR", xi = abundance, ti = standardized.density, data = data) %>% 
+  filter(yi != "NA")
+
+###Richness (Not useful since only 1 study reports richness)
+data_e2 <- escalc(measure = "IR", xi = animal.richness, ti = density, data = data) %>% 
+  filter(yi != "NA")
+
+###Rename the new columns
+data_1 <- data_e1 %>% 
+  rename(abundance_rate = yi, var_abundancerate = vi)
+
+data_2 <- data_e2 %>%
+  rename(richness_rate = yi, var_richnessrate = vi)
+
+###All data
+data_all <- merge(data_1, data_2, all = TRUE)
+
+###Summarize Data
+summary_data <- data_all %>% 
+  group_by(Study.ID) %>% 
+  summarise(abundance = mean(abundance), abundance_rate = mean(abundance_rate), richness_rate = mean(richness_rate), var_abundance= sd(var_abundancerate), var_richnessrate = sd(var_richnessrate), mean_density= mean(standardized.density))
+summary_data$Study.ID <- as.character(summary_data$Study.ID)
+#Not usefull#
+summary_data2 <- data_all %>% 
+  group_by(macrohabitat) %>% 
+  summarise(abundance = mean(abundance), abundance_rate = mean(abundance_rate), richness_rate = mean(richness_rate), var_abundance= sd(var_abundancerate), var_richnessrate = sd(var_richnessrate), mean_density= mean(standardized.density))
+summary_data$Study.ID <- as.character(summary_data$Study.ID)
+```
+
+###Good Figures (May 18 2021)
+```{r}
+ggplot(data = data_e1, aes(yi, fill = facilitation)) +
+  geom_histogram(bins = 40) + labs(x = "Incidence Rate for Animal Abundance", y = "Frequency") + theme_classic()
+```
+
+```{r}
+ggplot(summary_data, aes(Study.ID, abundance_rate)) +
+  geom_point(size =2) +
+  geom_errorbar(aes(ymin = abundance - var_abundance, ymax = abundance + var_abundance), size= 0.7, width=0.1, position = position_dodge(width = 0.5)) +
+  coord_flip() +
+  geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 2) + 
+  labs(x = "Study", y = "Incident Rate of Abundance") + theme_classic()
+```
+```{r}
+ggplot(summary_data2, aes(macrohabitat, abundance_rate)) +
+  geom_point(size =2) +
+  geom_errorbar(aes(ymin = abundance - var_abundance, ymax = abundance + var_abundance), size= 0.7, width=0.1, position = position_dodge(width = 0.5)) +
+  coord_flip() +
+  geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 2) + theme_classic()
+```
+
+###Meta Models
+```{r}
+library(broom)
+#x = density
+#y = abundance
+#With density
+mod1.1 <- rma(yi = yi, sei = vi, method = "ML", mods = ~standardized.density, test = "knha", control=list(stepadj=0.5), data = data_e1)
+summary(mod1.1)
+```
+```{r}
+m1.1 <- tidy(mod1.1)
+m1.1
+```
+```{r}
+plot(mod1.1)
+```
+
+
+
+
+
+###EDA
+
+```{r}
+#With Ecosystem (Not usefull)
+mod1.2 <- rma(yi = yi, sei = vi, method = "ML", mods = ~macrohabitat -1, test = "knha", control=list(stepadj=0.5), data = data_e1)
+summary(mod1.2)
+```
+```{r}
+m1.2 <- tidy(mod1.2)
+m1.2
+```
+```{r}
+plot(mod1.2)
+```
+```{r}
+#Without data and ecosystem
+mod1.3 <- rma(yi = yi, sei = vi, method = "ML", test = "knha", control=list(stepadj=0.5), data = data_e1)
+summary(mod1.3)
+```
+```{r}
+ml.3 <- tidy(mod1.3)
+ml.3
+```
+```{r}
+plot(mod1.3)
+```
+
+###Data Viz 
+```{r}
+##Mean Density by abundance
+ggplot(summary_data, aes(mean_density, abundance)) +
+  geom_point() +
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 2, color = "black", size = 2, se = FALSE)
+```
+```{r}
+###Abundance by ecosystem (Does not seem important for us)
+ggplot(data_e1, aes(macrohabitat, yi)) +
+  geom_boxplot() +
+  labs(x = "Ecoystem", y = "Incidence Rate for Animal Abundance") + 
+  stat_summary(fun.y=mean, geom="point", shape=1, size = 1, color="black", fill="red")
+```
+
+```{r}
+##Standardized density by animal abundance
+ggplot(data_e1, aes(standardized.density, abundance)) +
+  geom_point() + 
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 2, color = "black", se = FALSE) +
+  labs(x = "Total Shrub Density per Study", y = "Incidence Rate for Animal Abundance")
+
+##Standardized density by animal abundance groupped by ecosystem
+ggplot(data_e1, aes(standardized.density, abundance)) +
+  geom_point(aes(color = macrohabitat)) + 
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 2, color = "black", se = FALSE) +
+  labs(x = "Total Shrub Density per Study", y = "Incidence Rate for Animal Abundance")
+```
+```{r}
+ggplot(data_e1, aes(standardized.density, yi, weight = vi)) +
+  geom_point() + 
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 2, color = "black", size = 2, se = FALSE) +
+  labs(x = "Shrub Density", y = "incidence rate for animal abundance")
+ggplot(data_e1, aes(standardized.density, yi, weight = vi)) +
+  geom_point(aes(color = macrohabitat)) + 
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 2, color = "black", size = 2, se = FALSE) +
+  labs(x = "Total Shrub Density per Study", y = "Incidence Rate for Animal Abundance")
+```
+
+```{r}
+ggplot(summary_data2, aes(macrohabitat, abundance)) +
+  geom_point(size =2) +
+  geom_errorbar(aes(ymin = abundance - var_abundance, ymax = abundance + var_abundance), size= 0.7, width=0.1, position = position_dodge(width = 0.5)) +
+  coord_flip() +
+  geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 2)
+```
+
+
+
+###Interpretations
