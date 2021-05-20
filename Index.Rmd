@@ -4,20 +4,20 @@ author: "Mario"
 date: '2021-03-16'
 output: html_document
 ---
-##Shrub Density influences on Animals
+## Shrub Density influences on Animals
 The following is a review of shrubs that have been reported as benefactor species on local animal communities. Web of Science resources were queried using the following key terms.
 
 "facil* density* shrub*”, “density* shrub* facilitate*” and “density* shrub* animal* facil*"
 
-###Questions:
+### Questions:
 Is there evidence that shrub studies that reported facilitation of other plants or of animals influence measures of animal community composition?  
 Is there are a relationship between animal abundance or richness and shrub or tree density?
 Is there a difference between the measures of animal community composition in studies that reported facilitation or not?
 
-###Hypothesis:
+### Hypothesis:
 Higher density of foundation species that have reported facilitation support higher densities or more rich animal communities.
 
-###Predictions:
+### Predictions:
 1. Reported benefactor plants better support animal communities.  
 2. Higher density of benefactor plants predict higher measures of animal community structure or composition.  
 
@@ -59,9 +59,9 @@ summary_data2 <- data_all %>%
 summary_data$Study.ID <- as.character(summary_data$Study.ID)
 ```
 
-###Good Figures (May 18 2021)
+### Good Figures (May 18 2021)
 ```{r}
-ggplot(data = data_e1, aes(yi), colour = macrohabitat) +
+ggplot(data = data_e1, aes(yi)) +
   geom_histogram(bins = 40) + labs(x = "Incidence Rate for Animal Abundance", y = "Frequency") + theme_classic()
 ```
 
@@ -71,10 +71,10 @@ ggplot(summary_data, aes(Study.ID, abundance_rate)) +
   geom_errorbar(aes(ymin = abundance - var_abundance, ymax = abundance + var_abundance), size= 0.7, width=0.1, position = position_dodge(width = 0.5)) +
   coord_flip() +
   geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 2) + 
-  labs(x = "Incident Rate of Abundance", y = "Study") + theme_classic()
+  labs(x = "Study", y = "Incident Rate of Abundance") + theme_classic()
 ```
 
-###Meta Models
+### Meta Models
 ```{r}
 library(broom)
 #x = density
@@ -95,7 +95,8 @@ plot(mod1.1)
 
 
 
-###EDA
+
+### EDA
 
 ```{r}
 #With Ecosystem (Not usefull)
@@ -122,7 +123,7 @@ ml.3
 plot(mod1.3)
 ```
 
-###Data Viz 
+## Data Viz 
 ```{r}
 ##Mean Density by abundance
 ggplot(summary_data, aes(mean_density, abundance)) +
@@ -171,4 +172,4 @@ ggplot(summary_data2, aes(macrohabitat, abundance)) +
 
 
 
-###Interpretations
+### Interpretations
