@@ -23,6 +23,7 @@ Higher density of foundation species that have reported facilitation support hig
 
 ```{r setup, include=FALSE}
 library(tidyverse)
+library(stats)
 data <- read_csv("Synthesis Data.csv") %>%
   rename(abundance = "animal.abundance") %>%
   rename(density = "density.number")
@@ -50,8 +51,12 @@ data_all <- merge(data_1, data_2, all = TRUE)
 ###Summarize Data
 summary_data <- data_all %>% 
   group_by(Study.ID) %>% 
-  summarise(abundance = mean(abundance), abundance_rate = mean(abundance_rate), richness_rate = mean(richness_rate), var_abundance= sd(var_abundancerate), var_richnessrate = sd(var_richnessrate), mean_density= mean(standardized.density))
+  summarise(abundance = mean(abundance), density = mean(standardized.density), abundance_rate = mean(abundance_rate), var_abundance= sd(var_abundancerate))
 summary_data$Study.ID <- as.character(summary_data$Study.ID)
+
+#Make the weight for the regression
+summary_data$W <- 1/summary_data$var_abundance^2
+
 #Not usefull#
 summary_data2 <- data_all %>% 
   group_by(macrohabitat) %>% 
@@ -84,11 +89,36 @@ mod1.1 <- rma(yi = yi, sei = vi, method = "ML", mods = ~standardized.density, te
 summary(mod1.1)
 ```
 ```{r}
-m1.1 <- tidy(mod1.1)
+m1.1 <- tidy(mod1.1) 
 m1.1
 ```
 ```{r}
 plot(mod1.1)
+```
+
+###Trying to do regressions
+```{r}
+cmodel <- lm(density ~ abundance_rate, data=summary_data, weights = W)
+cmodel
+```
+```{r}
+summary(cmodel)
+```
+
+
+```{r}
+ggplot(data = summary_data, aes(abundance, density)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+
+
+```{r}
+#Sampling effort
+ggplot(data_e1, aes(n_days, yi)) +
+  geom_point(aes(color = macrohabitat)) + 
+  labs(x = "total days sampled per study", y = "abundance capture rates")
 ```
 
 ### Interpretations
