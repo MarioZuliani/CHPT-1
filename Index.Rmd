@@ -112,6 +112,31 @@ ggplot(data = summary_data, aes(abundance, density)) +
   geom_smooth(method = "lm", se = FALSE)
 ```
 
+```{r}
+model <- lm(density ~ abundance, data=data_e1)
+summary(model)
+```
+```{r}
+plot(fitted(model), resid(model), xlab='Fitted Values', ylab='Residuals') + abline(0,0)
+```
+```{r}
+library(lmtest)
+bptest(model)
+```
+```{r}
+wt <- 1 / lm(abs(model$residuals) ~ model$fitted.values)$fitted.values^2
+wls_model <- lm(density ~ abundance, data = data_e1, weights=wt)
+summary(wls_model)
+```
+
+```{r}
+data.frame(y = rstandard(model),
+           x = model$fitted.values) %>%
+  ggplot(aes(x = x, y = y)) + 
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  labs(title = "Standardized Residuals vs Fitted Values Plot")
+```
 
 
 ```{r}
