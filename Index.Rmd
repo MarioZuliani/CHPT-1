@@ -64,7 +64,7 @@ summary_data2 <- data_all %>%
 summary_data$Study.ID <- as.character(summary_data$Study.ID)
 ```
 
-### Good Figures (May 18 2021)
+### Good Figures (June 8th 2021)
 ```{r}
 ggplot(data = data_e1, aes(yi)) +
   geom_histogram(bins = 40) + labs(x = "Incidence Rate for Animal Abundance", y = "Frequency") + theme_classic()
