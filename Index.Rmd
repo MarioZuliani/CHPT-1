@@ -85,9 +85,15 @@ library(broom)
 #x = density
 #y = abundance
 #With density
-mod1.1 <- rma(yi = yi, sei = vi, method = "ML", mods = ~standardized.density, test = "knha", control=list(stepadj=0.5), data = data_e1)
+mod1.1 <- rma(yi = yi, sei = vi, method = "ML", test = "knha", control=list(stepadj=0.5), data = data_e1)
 summary(mod1.1)
 ```
+```{r}
+mod1.2 <- rma(yi = yi, sei = vi, method = "ML", mods = ~macrohabitat-1, test = "knha", control=list(stepadj=0.5), data = data_e1)
+summary(mod1.2)
+```
+
+
 ```{r}
 m1.1 <- tidy(mod1.1) 
 m1.1
@@ -95,10 +101,83 @@ m1.1
 ```{r}
 plot(mod1.1)
 ```
-
-###Trying to do regressions
+###Weighted regression with all data
 ```{r}
-cmodel <- lm(density ~ abundance_rate, data=summary_data, weights = W)
+gmodel <- lm(standardized.density ~ abundance, data=data_all, weights = n_days)
+gmodel
+summary(gmodel)
+```
+### Fig1 with Line
+```{r}
+ggplot(data = data_all, aes(abundance, standardized.density)) +
+  geom_point() +
+  geom_smooth(method = "lm", mapping = aes(weight = n_days)) + labs(x = "Abundance", y = "Desnity") + theme_classic()
+```
+### Fig1 With Curve
+```{r}
+ggplot(data = data_all, aes(abundance, standardized.density)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days)) + labs(x = "Abundance", y = "Desnity") + theme_classic()
+```
+
+
+```{r}
+model1 <- lm(standardized.density ~ abundance, data=data_all)
+summary(model1)
+```
+```{r}
+plot(fitted(model1), resid(model1), xlab='Fitted Values', ylab='Residuals') + abline(0,0)
+```
+```{r}
+library(lmtest)
+bptest(model1)
+```
+```{r}
+wt <- 1 / lm(abs(model1$residuals) ~ model1$fitted.values)$fitted.values^2
+wls_model <- lm(standardized.density ~ abundance, data = data_all, weights=wt)
+summary(wls_model)
+```
+```{r}
+data.frame(y = rstandard(model1),
+           x = model1$fitted.values) %>%
+  ggplot(aes(x = x, y = y)) + 
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dotted") +
+  labs(title = "Standardized Residuals vs Fitted Values Plot")
+```
+```{r}
+ggplot(data = data_all, aes(y = standardized.density, x = abundance)) +
+  geom_point() +
+  geom_smooth(method = lm, se = FALSE,
+              color = "black", 
+              size = 0.5, 
+              linetype = "dashed") +
+  geom_smooth(method = lm, se = FALSE, 
+              aes(weight = wt),
+              color = "red", 
+              size = 0.5,
+              linetype = "dashed") +
+  labs(title = "Scatterplot of Density ~ abundance")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###Trying to do regressions with summary data
+```{r}
+cmodel <- lm(density ~ abundance_rate, data=summary_data, weights = )
 cmodel
 ```
 ```{r}
@@ -145,5 +224,37 @@ ggplot(data_e1, aes(n_days, yi)) +
   geom_point(aes(color = macrohabitat)) + 
   labs(x = "total days sampled per study", y = "abundance capture rates")
 ```
+```{r}
+ggplot(summary_data2, aes(macrohabitat, abundance_rate)) +
+  geom_point(size =2) +
+  geom_errorbar(aes(ymin = abundance - var_abundance, ymax = abundance + var_abundance), size= 0.7, width=0.1, position = position_dodge(width = 0.5)) +
+  coord_flip() +
+  geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 2) + 
+  labs(x = "Study", y = "Incident Rate of Abundance") + theme_classic()
+```
+```{r}
+MyData <- read.csv("MyData.csv")
+
+figure2 <- ggplot(MyData, aes(as.factor(rep), abundance_rate, color = macrohabitat)) +
+  geom_point(size =2) +
+  geom_errorbar(aes(ymin = abundance_rate - var_abundancerate, ymax = abundance_rate + var_abundancerate), size= 0.7, width=0.1, position = position_dodge(width = 0.5)) +
+  coord_flip() +
+  geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 1) + 
+  labs(x = "Rep", y = "Incident Rate of Abundance") + theme_classic() + 
+  theme(axis.text = element_text(size = 5))  
+figure2
+```
+```{r}
+figure3 <- ggplot(MyData, aes(as.factor(rep), abundance_rate, color = macrohabitat)) +
+  geom_point(size =2) +
+  geom_errorbar(aes(ymin = abundance_rate - var_abundancerate, ymax = abundance_rate + var_abundancerate), size= 0.7, width=0.1, position = position_dodge(width = 0.5)) +
+  coord_flip() +
+  geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 1) + 
+  labs(x = "Rep", y = "Incident Rate of Abundance") + theme_classic() + 
+  theme(axis.text.y = element_blank(), axis.text = element_text(size = 10))
+  
+figure3
+```
+
 
 ### Interpretations
