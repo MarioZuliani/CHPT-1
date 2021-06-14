@@ -24,6 +24,7 @@ Higher density of foundation species that have reported facilitation support hig
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(stats)
+library(RColorBrewer)
 data <- read_csv("Synthesis Data.csv") %>%
   rename(abundance = "animal.abundance") %>%
   rename(density = "density.number")
@@ -31,10 +32,9 @@ data
 
 ###Abundance
 library(metafor)
-data_e1 <- escalc(measure = "IR", xi = abundance, ti = standardized.density, data = data) %>% 
+data_e1 <- escalc(measure = "IR", xi = abundance, ti = n_days, ni = standardized.density, data = data) %>% 
   filter(yi != "NA")
 
-###Richness (Not useful since only 1 study reports richness)
 data_e2 <- escalc(measure = "IR", xi = animal.richness, ti = density, data = data) %>% 
   filter(yi != "NA")
 
@@ -62,6 +62,9 @@ summary_data2 <- data_all %>%
   group_by(macrohabitat) %>% 
   summarise(abundance = mean(abundance), abundance_rate = mean(abundance_rate), richness_rate = mean(richness_rate), var_abundance= sd(var_abundancerate), var_richnessrate = sd(var_richnessrate), mean_density= mean(standardized.density))
 summary_data$Study.ID <- as.character(summary_data$Study.ID)
+
+
+data
 ```
 
 ### Good Figures (June 8th 2021)
@@ -93,6 +96,11 @@ mod1.2 <- rma(yi = yi, sei = vi, method = "ML", mods = ~macrohabitat-1, test = "
 summary(mod1.2)
 ```
 
+```{r}
+###Dont worry about this
+mod1.3 <- rma(yi = yi, sei = vi, method = "ML", mods = ~rep-1, test = "knha", control=list(stepadj=0.5), data = data_e1)
+summary(mod1.3)
+```
 
 ```{r}
 m1.1 <- tidy(mod1.1) 
@@ -109,16 +117,23 @@ summary(gmodel)
 ```
 ### Fig1 with Line
 ```{r}
-ggplot(data = data_all, aes(abundance, standardized.density)) +
+ggplot(data = data_e1, aes(abundance, standardized.density)) +
   geom_point() +
-  geom_smooth(method = "lm", mapping = aes(weight = n_days)) + labs(x = "Abundance", y = "Desnity") + theme_classic()
+  geom_smooth(method = "lm", mapping = aes(weight = n_days), se = F) + labs(x = "Abundance", y = "Density") + theme_classic()
 ```
 ### Fig1 With Curve
 ```{r}
-ggplot(data = data_all, aes(abundance, standardized.density)) +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days)) + labs(x = "Abundance", y = "Desnity") + theme_classic()
+fig1 <- ggplot(data = data_e1, aes(abundance, standardized.density)) +
+  geom_point() + ylim(0,15) +
+  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Abundance", y = "Density") + theme_classic() 
+fig1
 ```
+```{r}
+color_points <- ggplot(data = data_e1, aes(abundance, standardized.density, color = macrohabitat)) +
+  geom_point() 
+color_points
+```
+
 
 
 ```{r}
@@ -224,18 +239,11 @@ ggplot(data_e1, aes(n_days, yi)) +
   geom_point(aes(color = macrohabitat)) + 
   labs(x = "total days sampled per study", y = "abundance capture rates")
 ```
-```{r}
-ggplot(summary_data2, aes(macrohabitat, abundance_rate)) +
-  geom_point(size =2) +
-  geom_errorbar(aes(ymin = abundance - var_abundance, ymax = abundance + var_abundance), size= 0.7, width=0.1, position = position_dodge(width = 0.5)) +
-  coord_flip() +
-  geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 2) + 
-  labs(x = "Study", y = "Incident Rate of Abundance") + theme_classic()
-```
+
 ```{r}
 MyData <- read.csv("MyData.csv")
 
-figure2 <- ggplot(MyData, aes(as.factor(rep), abundance_rate, color = macrohabitat)) +
+figure2 <- ggplot(data_all, aes(as.factor(rep), abundance_rate, color = macrohabitat)) +
   geom_point(size =2) +
   geom_errorbar(aes(ymin = abundance_rate - var_abundancerate, ymax = abundance_rate + var_abundancerate), size= 0.7, width=0.1, position = position_dodge(width = 0.5)) +
   coord_flip() +
@@ -245,13 +253,14 @@ figure2 <- ggplot(MyData, aes(as.factor(rep), abundance_rate, color = macrohabit
 figure2
 ```
 ```{r}
-figure3 <- ggplot(MyData, aes(as.factor(rep), abundance_rate, color = macrohabitat)) +
+###Forest Plot for paper
+figure3 <- ggplot(data_all, aes(as.factor(rep), abundance_rate, color = macrohabitat)) +
   geom_point(size =2) +
-  geom_errorbar(aes(ymin = abundance_rate - var_abundancerate, ymax = abundance_rate + var_abundancerate), size= 0.7, width=0.1, position = position_dodge(width = 0.5)) +
+  geom_errorbar(aes(ymin = abundance_rate - var_abundancerate, ymax = abundance_rate + var_abundancerate), size= 0.4, width=0.1, position = position_dodge(width = 0.5)) +
   coord_flip() +
-  geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 1) + 
+  geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 0.5) + 
   labs(x = "Rep", y = "Incident Rate of Abundance") + theme_classic() + 
-  theme(axis.text.y = element_blank(), axis.text = element_text(size = 10))
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),legend.title = element_blank(), axis.text = element_text(size = 10)) + labs(x = "Observations") + scale_color_manual(values = c("desert" = "blue", "grassland" = "green"))
   
 figure3
 ```
