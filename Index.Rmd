@@ -25,6 +25,7 @@ Higher density of foundation species that have reported facilitation support hig
 library(tidyverse)
 library(stats)
 library(RColorBrewer)
+library(ggpubr) 
 data <- read_csv("Synthesis Data.csv") %>%
   rename(abundance = "animal.abundance") %>%
   rename(density = "density.number")
@@ -96,11 +97,6 @@ mod1.2 <- rma(yi = yi, sei = vi, method = "ML", mods = ~macrohabitat-1, test = "
 summary(mod1.2)
 ```
 
-```{r}
-###Dont worry about this
-mod1.3 <- rma(yi = yi, sei = vi, method = "ML", mods = ~rep-1, test = "knha", control=list(stepadj=0.5), data = data_e1)
-summary(mod1.3)
-```
 
 ```{r}
 m1.1 <- tidy(mod1.1) 
@@ -123,15 +119,15 @@ ggplot(data = data_e1, aes(abundance, standardized.density)) +
 ```
 ### Fig1 With Curve
 ```{r}
-fig1 <- ggplot(data = data_e1, aes(abundance, standardized.density)) +
-  geom_point() + ylim(0,15) +
-  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Abundance", y = "Density") + theme_classic() 
+fig1 <- ggplot(data = data_e1, aes(abundance, standardized.density, color = macrohabitat)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Abundance", y = "Density") + theme_classic() + facet_wrap(~macrohabitat)
 fig1
 ```
 ```{r}
 color_points <- ggplot(data = data_e1, aes(abundance, standardized.density, color = macrohabitat)) +
-  geom_point() 
-color_points
+  geom_point() + scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue"))
+color_points + theme(legend.title = element_blank()) + labs(x = "Abundance", y = "Density") +theme_classic()
 ```
 
 
@@ -243,14 +239,6 @@ ggplot(data_e1, aes(n_days, yi)) +
 ```{r}
 MyData <- read.csv("MyData.csv")
 
-figure2 <- ggplot(data_all, aes(as.factor(rep), abundance_rate, color = macrohabitat)) +
-  geom_point(size =2) +
-  geom_errorbar(aes(ymin = abundance_rate - var_abundancerate, ymax = abundance_rate + var_abundancerate), size= 0.7, width=0.1, position = position_dodge(width = 0.5)) +
-  coord_flip() +
-  geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 1) + 
-  labs(x = "Rep", y = "Incident Rate of Abundance") + theme_classic() + 
-  theme(axis.text = element_text(size = 5))  
-figure2
 ```
 ```{r}
 ###Forest Plot for paper
@@ -260,10 +248,140 @@ figure3 <- ggplot(data_all, aes(as.factor(rep), abundance_rate, color = macrohab
   coord_flip() +
   geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 0.5) + 
   labs(x = "Rep", y = "Incident Rate of Abundance") + theme_classic() + 
-  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),legend.title = element_blank(), axis.text = element_text(size = 10)) + labs(x = "Observations") + scale_color_manual(values = c("desert" = "blue", "grassland" = "green"))
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank(),legend.title = element_blank(), axis.text = element_text(size = 10)) + labs(x = "Observations") + scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + facet_wrap(~macrohabitat)
   
 figure3
 ```
 
+```{r}
+desert.forest <- ggplot(subset(data_all, macrohabitat %in% c("desert")), aes(as.factor(rep), abundance_rate, color = macrohabitat)) + 
+  geom_point(size =2) +
+  geom_errorbar(aes(ymin = abundance_rate - var_abundancerate, ymax = abundance_rate + var_abundancerate), size= 0.4, width=0.1, position = position_dodge(width = 0.5)) +
+  coord_flip() + facet_wrap(~microsite, scales = "free") +
+  geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 1.5) + 
+  labs(x = "Rep", y = "Incident Rate of Abundance") + theme_classic() + 
+  theme(legend.position = "none", axis.text.y = element_blank(), axis.ticks.y = element_blank(),legend.title = element_blank(), axis.text = element_text(size = 10)) + labs(x = "Observations") + scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + facet_wrap(~macrohabitat, scales = "free")
+desert.forest 
+```
+```{r}
+grassland.forest <- ggplot(subset(data_all, macrohabitat %in% c("grassland")), aes(as.factor(rep), abundance_rate, color = macrohabitat)) +
+  geom_point(size =2) +
+  geom_errorbar(aes(ymin = abundance_rate - var_abundancerate, ymax = abundance_rate + var_abundancerate), size= 0.4, width=0.1, position = position_dodge(width = 0.5)) +
+  coord_flip() + facet_wrap(~microsite, scales = "free") +
+  geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 1.5) + 
+  labs(x = "Rep", y = "Incident Rate of Abundance") + theme_classic() + 
+  theme(axis.title.y = element_blank(), axis.text.y = element_blank(), axis.ticks.y = element_blank(), legend.position = "none", legend.title = element_blank(), axis.text = element_text(size = 10)) + labs(x = "Observations") + scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + facet_wrap(~macrohabitat, scales = "free")
+grassland.forest
+```
+
+```{r}
+###Figure is good! :D
+forestfig <- ggarrange(desert.forest, grassland.forest, nrow = 1, align = "v", heights = 10)
+forestfig
+```
+```{r}
+### Has abundance on x axis so does not work!!!
+grassland <- ggplot(subset(data_e1, macrohabitat %in% c("grassland")), aes(abundance, standardized.density, color = macrohabitat)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Animal Abundance", y = "Shrub Density") + theme_classic() + scale_color_manual(values = c("grassland" = "dark blue")) +theme(legend.position = "none") 
+grassland
+```
+```{r}
+### Has abundance on x axis so does not work!!!
+desert <- ggplot(subset(data_e1, macrohabitat %in% c("desert")), aes(abundance, standardized.density, color = macrohabitat)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Animal Abundance", y = " Shrub Density") + theme_classic() + facet_wrap(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + theme(legend.position = "none") + ylim(0,15)
+desert
+```
+```{r}
+scatterplot <- ggarrange(desert, grassland, nrow = 1, align = "v", heights = 10)
+scatterplot
+```
+
+##Try with natural log
+```{r}
+data_1$natlog <- log(data_1$abundance)
+log.grassland <- ggplot(subset(data_1, macrohabitat %in% c("grassland")), aes(standardized.density, natlog,  color = macrohabitat)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density", y = "Log Animal Abundance") + theme_classic() + facet_wrap(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) +theme(legend.position = "none")
+
+log.desert <- ggplot(subset(data_1, macrohabitat %in% c("desert")), aes(standardized.density, natlog, color = macrohabitat)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density", y = "Log Animal Abundance") + theme_classic() + facet_wrap(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + theme(legend.position = "none")
+```
+```{r}
+logplot <- ggarrange(log.desert, log.grassland, nrow = 1, align = "v", heights = 10)
+logplot
+```
+```{r}
+data_1$natlog.dense <- log(data_1$standardized.density)
+log.grassland.dense <- ggplot(subset(data_1, macrohabitat %in% c("grassland")), aes(natlog.dense, abundance,  color = macrohabitat)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Log Shrub Density", y = "Animal Abundance") + theme_classic() + facet_wrap(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) +theme(legend.position = "none")
+
+log.desert.dense <- ggplot(subset(data_1, macrohabitat %in% c("desert")), aes(natlog.dense, abundance, color = macrohabitat)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Log Shrub Density", y = "Animal Abundance") + theme_classic() + facet_wrap(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + theme(legend.position = "none")
+logplot.dense <- ggarrange(log.desert.dense, log.grassland.dense, nrow = 1, align = "v", heights = 10)
+logplot.dense
+```
+
+
+```{r}
+Alex_paper <- read.csv("Carrizo_telemetry_with_shrub_density.csv")
+Alex_paper_mean <- aggregate(Alex_paper[, 10], list(Alex_paper$year), mean)
+
+Alex_paper_count <- Alex_paper %>%
+ count(year, lizard)
+
+library(dplyr)
+Alex_paper_count <- Alex_paper_count %>% 
+  group_by(year) %>% 
+  summarise(Sum = sum(n))
+colnames(Alex_paper_mean) <- c("year", "Average Density")
+
+Alex_final <- merge(Alex_paper_mean, Alex_paper_count)
+
+Test <- Alex_paper %>%
+ count(lizard, year)
+```
+
+
+```{r}
+###Figures have density on x axis
+desertnew <- ggplot(subset(data_e1, macrohabitat %in% c("desert")), aes(standardized.density, abundance, color = macrohabitat)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density", y = " Animal Abundance") + theme_classic() + facet_wrap(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + theme(legend.position = "none")
+desertnew
+
+grasslandnew <- ggplot(subset(data_e1, macrohabitat %in% c("grassland")), aes(standardized.density, abundance, color = macrohabitat)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density", y = " Animal Abundance") + theme_classic() + facet_wrap(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + theme(legend.position = "none")
+grasslandnew
+```
+```{r}
+scatterplotnew <- ggarrange(desertnew, grasslandnew, nrow = 1, align = "v", heights = 10)
+scatterplotnew
+```
+```{r}
+log.facet <- ggplot(data_1, aes(standardized.density, natlog,  color = macrohabitat)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density", y = "Log Animal Abundance") + theme_classic() + facet_wrap(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) +theme(legend.position = "none")
+log.facet
+```
+```{r}
+plot <- ggplot(data_e1, aes(standardized.density, abundance, color = macrohabitat)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density", y = "Animal Abundance") + theme_classic() + facet_wrap(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + theme(legend.position = "none")
+plot
+```
+```{r}
+yi.plot <- ggplot(data_e1, aes(standardized.density, yi, color = macrohabitat)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density", y = "Animal Abundance") + theme_classic() + facet_wrap(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + theme(legend.position = "none")
+yi.plot
+```
 
 ### Interpretations
+1) Density matters in both grasslands and deserts
+2) The net effect of increasing density is positive and it's significantly positive (1.92)
