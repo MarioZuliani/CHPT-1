@@ -105,11 +105,6 @@ m1.1
 ```{r}
 plot(mod1.1)
 ```
-```{r}
-mod1.3 <- rma(yi = yi, sei = vi, method = "ML", mods = ~standardized.density, test = "knha", control=list(stepadj=0.5), data = data_e1)
-summary(mod1.3)
-```
-
 
 ###Weighted regression with all data
 ```{r}
