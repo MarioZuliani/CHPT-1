@@ -105,6 +105,12 @@ m1.1
 ```{r}
 plot(mod1.1)
 ```
+```{r}
+mod1.3 <- rma(yi = yi, sei = vi, method = "ML", mods = ~standardized.density, test = "knha", control=list(stepadj=0.5), data = data_e1)
+summary(mod1.3)
+```
+
+
 ###Weighted regression with all data
 ```{r}
 gmodel <- lm(standardized.density ~ abundance, data=data_all, weights = n_days)
@@ -349,12 +355,12 @@ Test <- Alex_paper %>%
 
 ```{r}
 ###Figures have density on x axis
-desertnew <- ggplot(subset(data_e1, macrohabitat %in% c("desert")), aes(standardized.density, abundance, color = macrohabitat)) +
+desertnew <- ggplot(subset(data_e1, macrohabitat %in% c("desert")), aes(standardized.density, yi, color = macrohabitat)) +
   geom_point() +
   geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density", y = " Animal Abundance") + theme_classic() + facet_wrap(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + theme(legend.position = "none")
 desertnew
 
-grasslandnew <- ggplot(subset(data_e1, macrohabitat %in% c("grassland")), aes(standardized.density, abundance, color = macrohabitat)) +
+grasslandnew <- ggplot(subset(data_e1, macrohabitat %in% c("grassland")), aes(standardized.density, yi, color = macrohabitat)) +
   geom_point() +
   geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density", y = " Animal Abundance") + theme_classic() + facet_wrap(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + theme(legend.position = "none")
 grasslandnew
@@ -370,7 +376,7 @@ log.facet <- ggplot(data_1, aes(standardized.density, natlog,  color = macrohabi
 log.facet
 ```
 ```{r}
-plot <- ggplot(data_e1, aes(standardized.density, abundance, color = macrohabitat)) +
+plot <- ggplot(data_e1, aes(standardized.density, yi, color = macrohabitat)) +
   geom_point() +
   geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density", y = "Animal Abundance") + theme_classic() + facet_wrap(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + theme(legend.position = "none")
 plot
@@ -378,9 +384,44 @@ plot
 ```{r}
 yi.plot <- ggplot(data_e1, aes(standardized.density, yi, color = macrohabitat)) +
   geom_point() +
-  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density", y = "Animal Abundance") + theme_classic() + facet_wrap(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + theme(legend.position = "none")
+  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density (per m^2)", y = "Animal Abundance") + theme_classic() + facet_wrap(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + theme(legend.position = "none")
 yi.plot
 ```
+```{r}
+data_new <- data_e1 %>% filter(plant.species !="Unknown")
+
+Caragana.K <- ggplot(subset(data_new, plant.species %in% c("Caragana korshinskii")), aes( standardized.density, yi, color = plant.species)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density (per m^2)", y = "Animal Abundance") + theme_classic() + facet_wrap(~plant.species) + scale_color_manual(values = c("Caragana korshinskii" = "dark blue")) + theme(legend.position = "none")
+Caragana.K
+
+Caragana.M <- ggplot(subset(data_new, plant.species %in% c("Caragana microphylla")), aes( standardized.density, yi, color = plant.species)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density (per m^2)", y = " Animal Abundance") + theme_classic() + facet_wrap(~plant.species) + scale_color_manual(values = c("Caragana microphylla" = "red")) + theme(legend.position = "none") + ylim(0,0.05)
+Caragana.M
+
+Ephedra<- ggplot(subset(data_new, plant.species %in% c("Ephedra californica")), aes( standardized.density, yi, color = plant.species)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x +I(x^2), mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density (per m^2)", y = "Animal Abundance") + theme_classic() + facet_wrap(~plant.species)  + scale_color_manual(values = c("Ephedra californica" = "red")) + theme(legend.position = "none")
+Ephedra
+
+fig3 <- ggarrange(Caragana.K, Caragana.M, Ephedra, nrow = 1, align = "v", heights = 10)
+fig3
+```
+```{r}
+###By shrub species
+mod1.3 <- rma(yi = yi, sei = vi, method = "ML", mods = ~plant.species-1, test = "knha", control=list(stepadj=0.5), data = data_new)
+summary(mod1.3)
+
+```
+
+
+```{r}
+mod2.1 <- rma(yi, vi, mods = ~poly(abundance, degree = 2, raw = TRUE), data = data_e1)
+summary(mod2.1)
+```
+
+
 
 ### Interpretations
 1) Density matters in both grasslands and deserts
