@@ -393,6 +393,22 @@ yi.plot <- ggplot(data_e1, aes(standardized.density, yi, color = macrohabitat)) 
 yi.plot
 ```
 ```{r}
+####Testing main data with no zeros
+
+exampleDF <- data_e1 %>%
+  group_split(zeroes = standardized.density == 0 | yi == 0)
+
+nozeros <- ggplot(exampleDF[[1]], aes(x = standardized.density, y = yi)) + 
+  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F)  + 
+  geom_point() +
+  geom_point(data = exampleDF[[2]], aes(x = standardized.density, y = yi), color = "red") +
+  xlab("Shrub Density") + 
+  ylab("Abundance")
+nozeros
+```
+
+
+```{r}
 yi.plot <- ggplot(data_e1, aes(standardized.density, yi, color = macrohabitat)) +
   geom_point() +
   geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density (per km^2)", y = "Animal Abundance") + theme_classic() + scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + theme(legend.position = "none")
