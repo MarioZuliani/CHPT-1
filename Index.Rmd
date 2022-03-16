@@ -389,7 +389,7 @@ plot
 library(scales)
 yi.plot <- ggplot(data_e1, aes(standardized.density, yi, color = macrohabitat)) +
   geom_point() +
-  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density (per km^2)", y = "Animal Abundance") + theme_classic() + facet_wrap(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + theme(legend.position = "none") +  scale_y_continuous(breaks= pretty_breaks())
+  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density (per km^2)", y = "Animal Abundance") + theme_classic() + facet_grid(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + theme(legend.position = "none") +  scale_y_continuous(breaks= pretty_breaks())
 yi.plot
 ```
 ```{r}
