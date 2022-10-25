@@ -64,6 +64,11 @@ summary_data2 <- data_all %>%
   summarise(abundance = mean(abundance), abundance_rate = mean(abundance_rate), richness_rate = mean(richness_rate), var_abundance= sd(var_abundancerate), var_richnessrate = sd(var_richnessrate), mean_density= mean(standardized.density))
 summary_data$Study.ID <- as.character(summary_data$Study.ID)
 
+#For Phylum
+summary_data3 <- data_all %>% filter(animal.phylum !="not specified") %>%
+  group_by(animal.phylum) %>% 
+  summarise(abundance = mean(abundance), abundance_rate = mean(abundance_rate), richness_rate = mean(richness_rate), var_abundance= sd(var_abundancerate), var_richnessrate = sd(var_richnessrate), mean_density= mean(standardized.density))
+
 
 data
 ```
@@ -87,7 +92,7 @@ ggplot(summary_data, aes(Study.ID, abundance_rate)) +
 ```{r}
 library(broom)
 #x = density
-#y = abundance
+#y = abundance 
 #With density
 mod1.1 <- rma(yi = yi, sei = vi, method = "ML", test = "knha", control=list(stepadj=0.5), data = data_e1)
 summary(mod1.1)
@@ -269,7 +274,7 @@ desert.forest <- ggplot(subset(data_all, macrohabitat %in% c("desert")), aes(as.
   coord_flip() + facet_wrap(~microsite, scales = "free") +
   geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 1.5) + 
   labs(x = "Rep", y = "Incident Rate of Abundance") + theme_classic() + 
-  theme(legend.position = "none", axis.text.y = element_blank(), axis.ticks.y = element_blank(),legend.title = element_blank(), axis.text = element_text(size = 10)) + labs(x = "Observations") + scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + facet_wrap(~macrohabitat, scales = "free") + geom_point(data = desert, size = 5, shape = "triangle")+scale_y_continuous(breaks=c(0,2,4,6,8))
+  theme(text = element_text(size = 14), panel.border = element_rect(color = "black", fill = NA, size = 1.5),legend.position = "none", axis.text.y = element_blank(), axis.ticks.y = element_blank(),legend.title = element_blank(), axis.text = element_text(size = 10)) + labs(x = "Observations") + scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + facet_wrap(~macrohabitat, scales = "free") + geom_point(data = desert, size = 5, shape = "triangle")+scale_y_continuous(breaks=c(0,2,4,6,8))
 desert.forest 
 ```
 ```{r}
@@ -278,8 +283,8 @@ grassland.forest <- ggplot(subset(data_all, macrohabitat %in% c("grassland")), a
   geom_errorbar(aes(ymin = abundance_rate - var_abundancerate, ymax = abundance_rate + var_abundancerate), size= 0.4, width=0.1, position = position_dodge(width = 0.5)) +
   coord_flip() + facet_wrap(~microsite, scales = "free") +
   geom_hline(yintercept = 1, colour="grey", linetype = "longdash", size = 1.5) + 
-  labs(x = "Rep", y = "Incident Rate of Abundance") + theme_classic() + 
-  theme(axis.title.y = element_blank(), axis.text.y = element_blank(), axis.ticks.y = element_blank(), legend.position = "none", legend.title = element_blank(), axis.text = element_text(size = 10)) + labs(x = "Observations") + scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + facet_wrap(~macrohabitat, scales = "free") + geom_point(data = grassland, size = 5, shape = "triangle")
+  labs(x = "Rep", y = "Incident Rate of Abundance") + theme_classic() +  
+  theme(text = element_text(size = 14), panel.border = element_rect(color = "black", fill = NA, size = 1.5), axis.title.y = element_blank(), axis.text.y = element_blank(), axis.ticks.y = element_blank(), legend.position = "none", legend.title = element_blank(), axis.text = element_text(size = 10)) + labs(x = "Observations") + scale_color_manual(values = c("desert" = "red", "grassland" = "dark green")) + facet_wrap(~macrohabitat, scales = "free") + geom_point(data = grassland, size = 5, shape = "triangle")
 grassland.forest
 ```
 
@@ -389,7 +394,7 @@ plot
 library(scales)
 yi.plot <- ggplot(data_e1, aes(standardized.density, yi, color = macrohabitat)) +
   geom_point() +
-  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density (per km^2)", y = "Animal Abundance") + theme_classic() + facet_grid(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark blue")) + theme(legend.position = "none") +  scale_y_continuous(breaks= pretty_breaks())
+  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density (per km^2)", y = "Animal Abundance") + theme_classic() + theme(text = element_text(size = 14), panel.border = element_rect(colour = "black", fill = NA, size = 1.5)) + facet_grid(~macrohabitat, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark green")) + theme(legend.position = "none") +  scale_y_continuous(breaks= pretty_breaks())
 yi.plot
 ```
 ```{r}
@@ -421,17 +426,17 @@ data_new <- data_e1 %>% filter(plant.species !="Unknown")
 
 Caragana.K <- ggplot(subset(data_new, plant.species %in% c("Caragana korshinskii")), aes( standardized.density, yi, color = plant.species)) +
   geom_point() +
-  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "", y = "Animal Abundance") + theme_classic() + facet_wrap(~plant.species) + scale_color_manual(values = c("Caragana korshinskii" = "dark blue")) + theme(legend.position = "none") +  scale_y_continuous(breaks= pretty_breaks())
+  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "", y = "Animal Abundance") + theme_classic() + theme(text = element_text(size = 14), panel.border = element_rect(colour = "black", fill = NA, size = 1.5)) + facet_wrap(~plant.species) + scale_color_manual(values = c("Caragana korshinskii" = "dark green")) + theme(legend.position = "none") +  scale_y_continuous(breaks= pretty_breaks())
 Caragana.K
 
 Caragana.M <- ggplot(subset(data_new, plant.species %in% c("Caragana microphylla")), aes( standardized.density, yi, color = plant.species)) +
   geom_point() +
-  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "", y = " ") + theme_classic() + facet_wrap(~plant.species) + scale_color_manual(values = c("Caragana microphylla" = "red")) + theme(legend.position = "none") + ylim(0,0.05) + scale_y_continuous(breaks = pretty_breaks()) 
+  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "", y = " ") + theme_classic() + theme(text = element_text(size = 14), panel.border = element_rect(colour = "black", fill = NA, size = 1.5)) + facet_wrap(~plant.species) + scale_color_manual(values = c("Caragana microphylla" = "red")) + theme(legend.position = "none") + ylim(0,0.05) + scale_y_continuous(breaks = pretty_breaks()) 
 Caragana.M
 
 Ephedra<- ggplot(subset(data_new, plant.species %in% c("Ephedra californica")), aes( standardized.density, yi, color = plant.species)) +
   geom_point() +
-  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "", y = "") + theme_classic() + facet_wrap(~plant.species)  + scale_color_manual(values = c("Ephedra californica" = "red")) + theme(legend.position = "none") + scale_y_continuous(breaks = pretty_breaks()) 
+  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "", y = "") + theme_classic() + theme(text = element_text(size = 14), panel.border = element_rect(colour = "black", fill = NA, size = 1.5)) + facet_wrap(~plant.species)  + scale_color_manual(values = c("Ephedra californica" = "red")) + theme(legend.position = "none") + scale_y_continuous(breaks = pretty_breaks()) 
 Ephedra
 
 fig3 <- ggarrange(Caragana.K, Caragana.M, Ephedra, ncol = 2, nrow = 2)
@@ -445,7 +450,82 @@ mod1.3 <- rma(yi = yi, sei = vi, method = "ML", mods = ~plant.species-1, test = 
 summary(mod1.3)
 ```
 
+```{r}
+supplement <- read.csv("studies_2022_redux.csv")
+supplement$technique <- factor(supplement$technique,                                    # Change ordering manually
+                  levels = c("survey", "experimental", "model", "telemetry", "restoration"))
 
+supplementfig2 <- ggplot(supplement, aes(x=technique, y=n_sites)) + 
+  geom_boxplot(outlier.shape = NA) + coord_flip() + theme_classic() + labs(x = "Technique", y = "Number of sites") + stat_summary(fun = mean, geom="point", shape=18, size=4, color="red", fill="red")
+
+supplementfig2
+```
+```{r}
+library(RColorBrewer)
+option1 <- ggplot(supplement, aes(x = technique, y = n_sites, fill = factor(ecosystem))) +
+  geom_bar(stat = "identity") +
+  coord_flip() + theme_classic() + theme(text = element_text(size = 14), panel.border = element_rect(colour = "black", fill = NA, size = 1.5)) + labs(x = "Technique", y = "Frequency") + theme( 
+        legend.spacing.y  = unit(1.0, 'cm')) + scale_fill_brewer(palette = "Paired")
+option1 <- option1 + guides(fill=guide_legend(title="Ecosystem"))
+option1
+
+```
+###Note: Might need to break up desert into invert and vert so the figures fit better.
+```{r}
+data_phylum <- data_e1 %>% filter(animal.phylum != "not specified")
+data_animaldesert_invert <- data_e1 %>% filter(macrohabitat != "grassland") %>%
+  filter(animal.phylum != "not specified") %>%
+  filter(animal.phylum != "vertebrate")
+
+data_animaldesert_vertebrate <- data_e1 %>% filter(macrohabitat != "grassland") %>%
+  filter(animal.phylum != "not specified") %>%
+  filter(animal.phylum != "invertebrate")
+
+phylum_desert_invert <- ggplot(data_animaldesert_invert, aes(standardized.density, yi, color = macrohabitat)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density (per km^2)", y = "Animal Abundance") + theme_classic() + theme(text = element_text(size = 14), panel.border = element_rect(colour = "black", fill = NA, size = 1.5)) + facet_grid(~animal.phylum, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark green")) + theme(legend.position = "none") +  scale_y_continuous(breaks= pretty_breaks())
+phylum_desert_invert
+
+phylum_desert_vertebrate <- ggplot(data_animaldesert_vertebrate, aes(standardized.density, yi, color = macrohabitat)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density (per km^2)", y = "Animal Abundance") + theme_classic() + theme(text = element_text(size = 14), panel.border = element_rect(colour = "black", fill = NA, size = 1.5)) + facet_grid(~animal.phylum, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark green")) + theme(legend.position = "none") +  scale_y_continuous(breaks= pretty_breaks())
+phylum_desert_vertebrate
+
+data_animalgrassland <- data_e1 %>% filter(macrohabitat != "desert") %>%
+  filter(animal.phylum != "not specified")
+
+phylum_grassland <- ggplot(data_animalgrassland, aes(standardized.density, yi, color = macrohabitat)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density (per km^2)", y = "Animal Abundance") + theme_classic() + theme(text = element_text(size = 14), panel.border = element_rect(colour = "black", fill = NA, size = 1.5)) + facet_grid(~animal.phylum, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark green")) + theme(legend.position = "none") +  scale_y_continuous(breaks= pretty_breaks())
+phylum_grassland
+
+
+phylum_fig <- ggarrange(phylum_desert_invert, phylum_desert_vertebrate, phylum_grassland ,  nrow = 2, ncol = 2, align = "v", heights = 10)
+
+phylum_fig
+
+
+phylum_fig <- ggplot(data_phylum, aes(standardized.density, yi)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density (per km^2)", y = "Animal Abundance") + theme_classic() + theme(text = element_text(size = 14), panel.border = element_rect(colour = "black", fill = NA, size = 1.5)) + facet_grid(~animal.phylum, scales = "free")+ scale_color_manual(values = c("desert" = "red", "grassland" = "dark green")) + theme(legend.position = "none") +  scale_y_continuous(breaks= pretty_breaks())
+phylum_fig
+
+mod1.4 <- rma(yi = yi, sei = vi, method = "ML", mods = ~animal.phylum-1 , test = "knha", control=list(stepadj=0.5), data = data_phylum)
+summary(mod1.4)
+```
+
+```{r}
+data_functional <- data_e1 %>% filter(functional.group != "not specified")
+
+functional_group <- ggplot(data_functional, aes(standardized.density, yi, color = functional.group)) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density (per km^2)", y = "Animal Abundance") + theme_classic() + theme(text = element_text(size = 14), panel.border = element_rect(colour = "black", fill = NA, size = 1.5)) + facet_grid(~functional.group, scales = "free")+ scale_color_manual(values = c("carnivore" = "red", "herbivore" = "dark green", "decomposer" = "dark blue")) + theme(legend.position = "none") +  scale_y_continuous(breaks= pretty_breaks())
+functional_group
+
+#Stats by functional group
+mod1.5 <- rma(yi = yi, sei = vi, method = "ML", mods = ~functional.group-1, test = "knha", control=list(stepadj=0.5), data = data_functional)
+summary(mod1.5)
+```
 ### Interpretations
 1) Density matters in both grasslands and deserts
 2) The net effect of increasing density is positive and it's significantly positive (1.92)
