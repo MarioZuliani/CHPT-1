@@ -36,15 +36,11 @@ library(metafor)
 data_e1 <- escalc(measure = "IR", xi = abundance, ti = n_days, ni = standardized.density, data = data) %>% 
   filter(yi != "NA")
 
-data_e2 <- escalc(measure = "IR", xi = animal.richness, ti = density, data = data) %>% 
-  filter(yi != "NA")
 
 ###Rename the new columns
 data_1 <- data_e1 %>% 
   rename(abundance_rate = yi, var_abundancerate = vi)
 
-data_2 <- data_e2 %>%
-  rename(richness_rate = yi, var_richnessrate = vi)
 
 ###All data
 data_all <- merge(data_1, data_2, all = TRUE)
@@ -519,7 +515,7 @@ data_functional <- data_e1 %>% filter(functional.group != "not specified")
 
 functional_group <- ggplot(data_functional, aes(standardized.density, yi, color = functional.group)) +
   geom_point() +
-  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density (per km^2)", y = "Animal Abundance") + theme_classic() + theme(text = element_text(size = 14), panel.border = element_rect(colour = "black", fill = NA, size = 1.5)) + facet_grid(~functional.group, scales = "free")+ scale_color_manual(values = c("carnivore" = "red", "herbivore" = "dark green", "decomposer" = "dark blue")) + theme(legend.position = "none") +  scale_y_continuous(breaks= pretty_breaks())
+  geom_smooth(method = "lm", formula = y~x, mapping = aes(weight = n_days), se = F) + labs(x = "Shrub Density (per km^2)", y = "Animal Abundance") + theme_classic() + theme(text = element_text(size = 14), panel.border = element_rect(colour = "black", fill = NA, size = 1.5)) + scale_color_manual(values = c("carnivore" = "red", "herbivore" = "dark green", "detritivore" = "dark blue", "invertivore" = "pink", "nectarivore" = "purple", "omnivore" = "black")) + theme(legend.position = "right") +  scale_y_continuous(breaks= pretty_breaks())
 functional_group
 
 #Stats by functional group
